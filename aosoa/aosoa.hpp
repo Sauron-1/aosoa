@@ -149,9 +149,9 @@ class Aosoa {
             if constexpr (S > 0) {
                 _size = size() / S * S;
             }
-            return AosoaIter<Types, N, 0, false>(this, _size);
+            return AosoaIter<Types, N, 1, false>(this, _size);
         }
-        template<size_t S=0> auto uend() { return AosoaIter<Types, N, 0, false>(this, size()); }
+        template<size_t S=0> auto uend() { return AosoaIter<Types, N, 1, false>(this, size()); }
 
         template<size_t S=0>
         auto ubegin() const {
@@ -159,9 +159,9 @@ class Aosoa {
             if constexpr (S > 0) {
                 _size = size() / S * S;
             }
-            return AosoaIter<Types, N, 0, true>(this, _size);
+            return AosoaIter<Types, N, 1, true>(this, _size);
         }
-        template<size_t S=0> auto uend() const { return AosoaIter<Types, N, 0, false>(this, size()); }
+        template<size_t S=0> auto uend() const { return AosoaIter<Types, N, 1, false>(this, size()); }
 
         template<size_t S=0> auto range() { return AosoaRangeProxy<Types, N, S, false, false>(this); }
         template<size_t S=0> auto range() const { return AosoaRangeProxy<Types, N, S, true, false>(this); }

@@ -34,7 +34,7 @@ int main() {
     }
     for (auto p : pa.urange<4>()) {  // iterate over unaligned elements
         tpa::assign(p.pos(), 0);
-        p.weight() = 0;
+        get<0>(p.weight()) = 0;
     }
 
     for (auto p : pa)  // iterate one-by-one, same as `for (auto p : pa.range<0>)`
