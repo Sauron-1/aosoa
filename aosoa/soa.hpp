@@ -204,21 +204,21 @@ class SoaArray : public Inherited<access_t<Types, typename StorageType<Types, N,
 
         SoaArray() : Inherited<access_t<Types, Data>>(m_data) {}
 
-        auto& data() { return m_data; }
-        const auto& data() const { return m_data; }
+        FORCE_INLINE auto& data() { return m_data; }
+        FORCE_INLINE const auto& data() const { return m_data; }
 
-        auto operator[](size_t idx) {
+        FORCE_INLINE auto operator[](size_t idx) {
             auto ref = tpa::foreach(m_data, [idx](auto& arr) -> auto& { return arr[idx]; });
             return SoaRef<Types>(ref);
         }
 
-        auto operator[](size_t idx) const {
+        FORCE_INLINE auto operator[](size_t idx) const {
             auto ref = tpa::foreach(m_data, [idx](auto& arr) -> auto& { return arr[idx]; });
             return SoaRef<typename const_types<Types>::type>(ref);
         }
 
         template<size_t S>
-        auto get(size_t idx) {
+        FORCE_INLINE auto get(size_t idx) {
             auto ref = tpa::foreach(m_data, [idx](auto& arr) -> auto& {
                 using elem_t = std::remove_cvref_t<decltype(arr[idx])>;
                 return *reinterpret_cast<std::array<elem_t, S>*>(&arr[idx]);
@@ -227,7 +227,7 @@ class SoaArray : public Inherited<access_t<Types, typename StorageType<Types, N,
         }
 
         template<size_t S>
-        auto get(size_t idx) const {
+        FORCE_INLINE auto get(size_t idx) const {
             auto ref = tpa::foreach(m_data, [idx](auto& arr) -> auto& {
                 using elem_t = std::remove_cvref_t<decltype(arr[idx])>;
                 return *reinterpret_cast<std::array<const elem_t, S>*>(&arr[idx]);
@@ -303,13 +303,13 @@ class SoaRef : public Inherited<access_t<Types, typename StorageType<Types, 0, E
         static constexpr size_t size() { return 0; }
 
         template<typename Refs>
-        SoaRef(Refs&& data) : m_data(data), Inherited<access_t<Types, Data>>(m_data) {}
+        FORCE_INLINE SoaRef(Refs&& data) : m_data(data), Inherited<access_t<Types, Data>>(m_data) {}
 
-        auto& data() { return m_data; }
-        const auto& data() const { return m_data; }
+        FORCE_INLINE auto& data() { return m_data; }
+        FORCE_INLINE const auto& data() const { return m_data; }
 
         template<typename OtherRef>
-        auto operator=(OtherRef&& other) {
+        FORCE_INLINE auto operator=(OtherRef&& other) {
             tpa::assign(m_data, other.data());
         }
 
@@ -326,38 +326,30 @@ class SoaRefN : public Inherited<access_t<Types,  typename StorageType<Types, N,
         static constexpr size_t size() { return N; }
 
         template<typename Refs>
-        SoaRefN(Refs&& data) : m_data(data), Inherited<access_t<Types, Data>>(m_data) {}
+        FORCE_INLINE SoaRefN(Refs&& data) : m_data(data), Inherited<access_t<Types, Data>>(m_data) {}
 
-        auto& data() { return m_data; }
-        const auto& data() const { return m_data; }
+        FORCE_INLINE auto& data() { return m_data; }
+        FORCE_INLINE const auto& data() const { return m_data; }
 
-        auto operator[](size_t idx) {
+        FORCE_INLINE auto operator[](size_t idx) {
             auto ref = tpa::foreach(m_data, [idx](auto& arr) -> auto& { return arr[idx]; });
             return SoaRef<Types>(ref);
         }
-        auto operator[](size_t idx) const {
+        FORCE_INLINE auto operator[](size_t idx) const {
             auto ref = tpa::foreach(m_data, [idx](auto& arr) -> auto& { return arr[idx]; });
             return SoaRef<typename const_types<Types>::type>(ref);
         }
 
         template<typename OtherRef>
-        auto operator=(OtherRef&& other) {
+        FORCE_INLINE auto operator=(OtherRef&& other) {
             tpa::assign(m_data, other.data());
         }
 
-        template<size_t S = 0>
-        auto begin() { return SoaIter<Self, S, false>(this, 0); }
-        template<size_t S = 0>
-        auto end() { return SoaIter<Self, S, false>(this, N); }
-        template<size_t S = 0>
-        auto range() { return SoaRangeProxy<Self, S, false>(this); }
+        FORCE_INLINE auto begin() { return SoaIter<Self, 0, false>(this, 0); }
+        FORCE_INLINE auto end() { return SoaIter<Self, 0, false>(this, N); }
 
-        template<size_t S = 0>
-        auto begin() const { return SoaIter<Self, S, true>(this, 0); }
-        template<size_t S = 0>
-        auto end() const { return SoaIter<Self, S, true>(this, N); }
-        template<size_t S = 0>
-        auto range() const { return SoaRangeProxy<Self, S, false>(this); }
+        FORCE_INLINE auto begin() const { return SoaIter<Self, 0, true>(this, 0); }
+        FORCE_INLINE auto end() const { return SoaIter<Self, 0, true>(this, N); }
 
     private:
         Data m_data;
@@ -375,43 +367,43 @@ class SoaIter {
         using Self = SoaIter<B, S, const_iter>;
         static constexpr ptrdiff_t step_size = S == 0 ? 1 : S;
 
-        SoaIter() : m_data(nullptr), m_index(0) {}
-        SoaIter(Base* base, size_t index) : m_data(base), m_index(index) {}
-        SoaIter(const SoaIter& other) : m_data(other.data()), m_index(other.index()) {}
+        FORCE_INLINE SoaIter() : m_data(nullptr), m_index(0) {}
+        FORCE_INLINE SoaIter(Base* base, size_t index) : m_data(base), m_index(index) {}
+        FORCE_INLINE SoaIter(const SoaIter& other) : m_data(other.data()), m_index(other.index()) {}
 
-        auto operator*() const {
+        FORCE_INLINE auto operator*() const {
             if constexpr (S == 0)
                 return (*m_data)[m_index];
             else
                 return m_data->template get<S>(m_index);
         }
 
-        size_t index() const { return m_index; }
-        Base* data() const { return m_data; }
+        FORCE_INLINE size_t index() const { return m_index; }
+        FORCE_INLINE Base* data() const { return m_data; }
 
-        auto& operator++() { m_index += step_size; return *this; }
-        auto operator++(int) { auto ret = Self(m_data, m_index); m_index += step_size; return ret; }
+        FORCE_INLINE auto& operator++() { m_index += step_size; return *this; }
+        FORCE_INLINE auto operator++(int) { auto ret = Self(m_data, m_index); m_index += step_size; return ret; }
 
-        auto& operator--() { m_index -= step_size; return *this; }
-        auto operator--(int) { auto ret = Self(m_data, m_index); m_index -= step_size; return ret; }
+        FORCE_INLINE auto& operator--() { m_index -= step_size; return *this; }
+        FORCE_INLINE auto operator--(int) { auto ret = Self(m_data, m_index); m_index -= step_size; return ret; }
 
-        auto& operator+=(std::ptrdiff_t offset) { m_index += offset * step_size; return *this; }
-        auto& operator-=(std::ptrdiff_t offset) { m_index -= offset * step_size; return *this; }
+        FORCE_INLINE auto& operator+=(std::ptrdiff_t offset) { m_index += offset * step_size; return *this; }
+        FORCE_INLINE auto& operator-=(std::ptrdiff_t offset) { m_index -= offset * step_size; return *this; }
 
-        auto operator+(std::ptrdiff_t offset) const { return Self(m_data, m_index + offset * step_size); }
-        auto operator-(std::ptrdiff_t offset) const { return Self(m_data, m_index + offset * step_size); }
+        FORCE_INLINE auto operator+(std::ptrdiff_t offset) const { return Self(m_data, m_index + offset * step_size); }
+        FORCE_INLINE auto operator-(std::ptrdiff_t offset) const { return Self(m_data, m_index + offset * step_size); }
 
-        auto operator[](std::ptrdiff_t offset) const { return *Self(m_data, m_index + offset * step_size); }
+        FORCE_INLINE auto operator[](std::ptrdiff_t offset) const { return *Self(m_data, m_index + offset * step_size); }
 
-        auto operator-(const Self& other) const { return (difference_type(m_index) - difference_type(other.index())) / step_size; }
+        FORCE_INLINE auto operator-(const Self& other) const { return (difference_type(m_index) - difference_type(other.index())) / step_size; }
 
-        bool operator==(const Self& other) const { return m_index == other.m_index; }
-        bool operator>=(const Self& other) const { return m_index >= other.m_index; }
-        bool operator<=(const Self& other) const { return m_index <= other.m_index; }
-        bool operator<(const Self& other) const { return m_index < other.m_index; }
-        bool operator>(const Self& other) const { return m_index > other.m_index; }
+        FORCE_INLINE bool operator==(const Self& other) const { return m_index == other.m_index; }
+        FORCE_INLINE bool operator>=(const Self& other) const { return m_index >= other.m_index; }
+        FORCE_INLINE bool operator<=(const Self& other) const { return m_index <= other.m_index; }
+        FORCE_INLINE bool operator<(const Self& other) const { return m_index < other.m_index; }
+        FORCE_INLINE bool operator>(const Self& other) const { return m_index > other.m_index; }
 
-        auto& operator=(const Self& other) {
+        FORCE_INLINE auto& operator=(const Self& other) {
             m_data = other.data();
             m_index = other.m_index;
             return *this;
@@ -422,9 +414,9 @@ class SoaIter {
         size_t m_index;
 };
 template<typename B, size_t S, bool const_iter>
-auto operator+(ptrdiff_t offset, const SoaIter<B, S, const_iter>& si) { return si + offset; }
+FORCE_INLINE auto operator+(ptrdiff_t offset, const SoaIter<B, S, const_iter>& si) { return si + offset; }
 template<typename B, size_t S, bool const_iter>
-auto operator+(ptrdiff_t offset, SoaIter<B, S, const_iter>& si) { return si + offset; }
+FORCE_INLINE auto operator+(ptrdiff_t offset, SoaIter<B, S, const_iter>& si) { return si + offset; }
 
 template<typename B, size_t S, bool const_iter>
 class SoaRangeProxy {

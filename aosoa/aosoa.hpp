@@ -67,7 +67,7 @@ class Aosoa {
 
         Aosoa() = default;
 
-        size_t size() const {
+        FORCE_INLINE size_t size() const {
             if (m_used_frames == 0) return 0;
             if (m_last_frame_num == 0)
                 return m_used_frames * frame_size;
@@ -75,30 +75,30 @@ class Aosoa {
                 return (m_used_frames - 1) * frame_size + m_last_frame_num;
         }
 
-        auto operator[](size_t i) { return (*m_data[i/frame_size])[i%frame_size]; }
-        auto operator[](size_t i) const { return (*m_data[i/frame_size])[i%frame_size]; }
+        FORCE_INLINE auto operator[](size_t i) { return (*m_data[i/frame_size])[i%frame_size]; }
+        FORCE_INLINE auto operator[](size_t i) const { return (*m_data[i/frame_size])[i%frame_size]; }
 
         template<size_t S>
-        auto get(size_t i) { return m_data[i/frame_size]->template get<S>(i%frame_size); }
+        FORCE_INLINE auto get(size_t i) { return m_data[i/frame_size]->template get<S>(i%frame_size); }
         template<size_t S>
-        auto get(size_t i) const { return m_data[i/frame_size]->template get<S>(i%frame_size); }
+        FORCE_INLINE auto get(size_t i) const { return m_data[i/frame_size]->template get<S>(i%frame_size); }
 
 
-        bool last_frame_full() const { return m_last_frame_num == 0; }
-        bool full() const { return m_used_frames == m_data.size() and last_frame_full(); }
+        FORCE_INLINE bool last_frame_full() const { return m_last_frame_num == 0; }
+        FORCE_INLINE bool full() const { return m_used_frames == m_data.size() and last_frame_full(); }
 
         void clear() { m_used_frames = 0; m_last_frame_num = 0; }
         void free_empty() { m_data.resize(m_used_frames); }
 
-        auto& data() const { return m_data; }
-        auto& data() { return m_data; }
+        FORCE_INLINE auto& data() const { return m_data; }
+        FORCE_INLINE auto& data() { return m_data; }
 
         /**
          * In most cases, resizing the container and assigning value using iterator
          * is prefered over using push_back.
          */
         template<typename T, size_t S=0>
-        void push_back(T&& t) {
+        FORCE_INLINE void push_back(T&& t) {
             if (full())
                 m_data.emplace_back(std::make_unique<SoaArray<Types, N>>());
             if (last_frame_full())
@@ -465,43 +465,43 @@ class AosoaIter {
         using Self = AosoaIter<Types, N, S, const_iter>;
         static constexpr ptrdiff_t step_size = S == 0 ? 1 : S;
 
-        AosoaIter() : m_data(nullptr), m_index(0) {}
-        AosoaIter(Base* base, size_t index) : m_data(base), m_index(index) {}
-        AosoaIter(const AosoaIter& other) : m_data(other.data()), m_index(other.index()) {}
+        FORCE_INLINE AosoaIter() : m_data(nullptr), m_index(0) {}
+        FORCE_INLINE AosoaIter(Base* base, size_t index) : m_data(base), m_index(index) {}
+        FORCE_INLINE AosoaIter(const AosoaIter& other) : m_data(other.data()), m_index(other.index()) {}
 
-        auto operator*() const {
+        FORCE_INLINE auto operator*() const {
             if constexpr (S == 0)
                 return (*m_data)[m_index];
             else
                 return m_data->template get<S>(m_index);
         }
 
-        size_t index() const { return m_index; }
-        Base* data() const { return m_data; }
+        FORCE_INLINE size_t index() const { return m_index; }
+        FORCE_INLINE Base* data() const { return m_data; }
 
-        auto& operator++() { m_index += step_size; return *this; }
-        auto operator++(int) { auto ret = Self(m_data, m_index); m_index += step_size; return ret; }
+        FORCE_INLINE auto& operator++() { m_index += step_size; return *this; }
+        FORCE_INLINE auto operator++(int) { auto ret = Self(m_data, m_index); m_index += step_size; return ret; }
 
-        auto& operator--() { m_index -= step_size; return *this; }
-        auto operator--(int) { auto ret = Self(m_data, m_index); m_index -= step_size; return ret; }
+        FORCE_INLINE auto& operator--() { m_index -= step_size; return *this; }
+        FORCE_INLINE auto operator--(int) { auto ret = Self(m_data, m_index); m_index -= step_size; return ret; }
 
-        auto& operator+=(std::ptrdiff_t offset) { m_index += offset * step_size; return *this; }
-        auto& operator-=(std::ptrdiff_t offset) { m_index -= offset * step_size; return *this; }
+        FORCE_INLINE auto& operator+=(std::ptrdiff_t offset) { m_index += offset * step_size; return *this; }
+        FORCE_INLINE auto& operator-=(std::ptrdiff_t offset) { m_index -= offset * step_size; return *this; }
 
-        auto operator+(std::ptrdiff_t offset) const { return Self(m_data, m_index + offset * step_size); }
-        auto operator-(std::ptrdiff_t offset) const { return Self(m_data, m_index + offset * step_size); }
+        FORCE_INLINE auto operator+(std::ptrdiff_t offset) const { return Self(m_data, m_index + offset * step_size); }
+        FORCE_INLINE auto operator-(std::ptrdiff_t offset) const { return Self(m_data, m_index + offset * step_size); }
 
-        auto operator[](std::ptrdiff_t offset) const { return *Self(m_data, m_index + offset * step_size); }
+        FORCE_INLINE auto operator[](std::ptrdiff_t offset) const { return *Self(m_data, m_index + offset * step_size); }
 
-        auto operator-(const Self& other) const { return (difference_type(m_index) - difference_type(other.index())) / step_size; }
+        FORCE_INLINE auto operator-(const Self& other) const { return (difference_type(m_index) - difference_type(other.index())) / step_size; }
 
-        bool operator==(const Self& other) const { return m_index == other.m_index; }
-        bool operator>=(const Self& other) const { return m_index >= other.m_index; }
-        bool operator<=(const Self& other) const { return m_index <= other.m_index; }
-        bool operator<(const Self& other) const { return m_index < other.m_index; }
-        bool operator>(const Self& other) const { return m_index > other.m_index; }
+        FORCE_INLINE bool operator==(const Self& other) const { return m_index == other.m_index; }
+        FORCE_INLINE bool operator>=(const Self& other) const { return m_index >= other.m_index; }
+        FORCE_INLINE bool operator<=(const Self& other) const { return m_index <= other.m_index; }
+        FORCE_INLINE bool operator<(const Self& other) const { return m_index < other.m_index; }
+        FORCE_INLINE bool operator>(const Self& other) const { return m_index > other.m_index; }
 
-        auto& operator=(const Self& other) {
+        FORCE_INLINE auto& operator=(const Self& other) {
             m_data = other.data();
             m_index = other.m_index;
             return *this;
@@ -512,9 +512,9 @@ class AosoaIter {
         size_t m_index;
 };
 template<typename Types, size_t N, size_t S, bool const_iter>
-auto operator+(std::ptrdiff_t offset, const AosoaIter<Types, N, S, const_iter>& ai) { return ai + offset; }
+FORCE_INLINE auto operator+(std::ptrdiff_t offset, const AosoaIter<Types, N, S, const_iter>& ai) { return ai + offset; }
 template<typename Types, size_t N, size_t S, bool const_iter>
-auto operator+(std::ptrdiff_t offset, AosoaIter<Types, N, S, const_iter>& ai) { return ai + offset; }
+FORCE_INLINE auto operator+(std::ptrdiff_t offset, AosoaIter<Types, N, S, const_iter>& ai) { return ai + offset; }
 
 template<typename Types, size_t N, size_t S, bool const_iter, bool unaligned>
 class AosoaRangeProxy {
