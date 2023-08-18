@@ -1,8 +1,5 @@
 #include "../aosoa/aosoa.hpp"
-#include <concepts>
-#include <iostream>
-#include <iterator>
-#include <cstdlib>
+#include <algorithm>
 
 using namespace std;
 
@@ -28,12 +25,9 @@ int main() {
         cout << get<0>(p.pos()) << " ";
     cout << endl;
 
-    using iter_type = decltype(pa.begin());
+    std::partition(pa.begin(), pa.end(), [](auto p) { return get<0>(p.pos()) >= 3; });
 
-    cout << std::totally_ordered<iter_type> << endl;
-    cout << typeid(std::iterator_traits<iter_type>::iterator_category).name() << endl;
-
-    cout << sizeof(soa::SoaArray<
-                        std::tuple< particle_field::vel<double, 3>,
-                                    particle_field::pos<double, 1>>, 8>) << endl;
+    for (auto p : pa)
+        cout << get<0>(p.pos()) << " ";
+    cout << endl;
 }

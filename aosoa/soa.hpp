@@ -86,7 +86,7 @@ using access_t = typename AccessTypes<Types, C>::type;
 // Template for inheriting element names
 template<typename Types> struct Inherited {};
 template<> struct Inherited<std::tuple<>> {
-    template<typename...Args> Inherited(Args&&...args) {}
+    template<typename...Args> Inherited(Args&&...) {}
 };
 template<typename T1, typename...Ts>
 struct Inherited<std::tuple<T1, Ts...>> :
@@ -364,6 +364,7 @@ class SoaIter {
         using self_types = std::conditional_t<const_iter, typename const_types<base_types>::type, base_types>;
         using difference_type = std::ptrdiff_t;
         using value_type = std::conditional_t<S==0, SoaRef<self_types>, SoaRefN<self_types, S>>;
+        using iterator_category = std::random_access_iterator_tag;
         using Self = SoaIter<B, S, const_iter>;
         static constexpr ptrdiff_t step_size = S == 0 ? 1 : S;
 
@@ -436,3 +437,10 @@ class SoaRangeProxy {
 
 
 } // namespace soa
+
+namespace std {
+template<typename Types>
+FORCE_INLINE void swap(soa::SoaRef<Types>&& a, soa::SoaRef<Types>&& b) {
+    std::swap(a.data(), b.data());
+}
+}

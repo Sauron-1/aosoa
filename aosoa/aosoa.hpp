@@ -1,3 +1,4 @@
+#include <iterator>
 #include <type_traits>
 #include <cstdint>
 #include <memory>
@@ -62,6 +63,7 @@ template<typename Types, size_t N>
 class Aosoa {
     public:
         using Frame = std::unique_ptr<SoaArray<Types, N>>;
+        using types = Types;
         static constexpr size_t frame_size = N;
         static constexpr size_t elem_size = elems_size<Types>::value;
 
@@ -206,8 +208,6 @@ class Aosoa {
             ((uint64_t*)buf)[2] = num_frame_full;
             ((uint64_t*)buf)[3] = num_tail;
             buf = (char*)buf + 4*sizeof(uint64_t);
-
-            auto buf0 = buf;
 
             // write data
             if (one_framed) {
@@ -461,6 +461,7 @@ class AosoaIter {
         >;
         using difference_type = std::ptrdiff_t;
         using value_type = std::conditional_t<S==0, SoaRef<self_types>, SoaRefN<self_types, S>>;
+        using iterator_category = std::random_access_iterator_tag;
 
         using Self = AosoaIter<Types, N, S, const_iter>;
         static constexpr ptrdiff_t step_size = S == 0 ? 1 : S;
