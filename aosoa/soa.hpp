@@ -51,11 +51,12 @@ struct NAME { \
     static constexpr size_t _dim = D; \
     static constexpr size_t dim = D == 0 ? 1 : D; \
     template<typename C, size_t Idx> \
-    struct Access : private soa::ElementBase<D, Idx>{ \
-        C& data; \
-        Access(C& c) : data(c) {}; \
+    struct Access : private soa::ElementBase<D, Idx> { \
+        decltype(auto) NAME() { \
+            return soa::ElementBase<D, Idx>::get((*static_cast<C*>(this)).data()); \
+        } \
         decltype(auto) NAME() const { \
-            return soa::ElementBase<D, Idx>::get(data); \
+            return soa::ElementBase<D, Idx>::get((*static_cast<const C*>(this)).data()); \
         } \
     }; \
 };
@@ -168,6 +169,7 @@ template<typename Types, size_t N> class SoaRefN;
 template<typename Types> class SoaRef;
 
 
+
 namespace internal {
 template<typename T> struct soa_traits {};
 
@@ -194,7 +196,7 @@ template<typename B, size_t S, bool const_iter> class SoaIter;
 template<typename B, size_t S, bool const_iter> class SoaRangeProxy;
     
 template<typename Types, size_t N>
-class SoaArray : public Inherited<access_t<Types, typename StorageType<Types, N, std::array>::type>> {
+class SoaArray : public Inherited<access_t<Types, SoaArray<Types, N>>> {
 
     public:
         using Data = typename StorageType<Types, N, std::array>::type;
@@ -202,7 +204,7 @@ class SoaArray : public Inherited<access_t<Types, typename StorageType<Types, N,
 
         static constexpr size_t size() { return N; }
 
-        SoaArray() : Inherited<access_t<Types, Data>>(m_data) {}
+        SoaArray() = default;
 
         FORCE_INLINE auto& data() { return m_data; }
         FORCE_INLINE const auto& data() const { return m_data; }
@@ -296,14 +298,14 @@ class SoaArray : public Inherited<access_t<Types, typename StorageType<Types, N,
 };
 
 template<typename Types>
-class SoaRef : public Inherited<access_t<Types, typename StorageType<Types, 0, ElemRef>::type>> {
+class SoaRef : public Inherited<access_t<Types, SoaRef<Types>>> {
     public:
         using Data = typename StorageType<Types, 0, ElemRef>::type;
 
         static constexpr size_t size() { return 0; }
 
         template<typename Refs>
-        FORCE_INLINE SoaRef(Refs&& data) : m_data(data), Inherited<access_t<Types, Data>>(m_data) {}
+        FORCE_INLINE SoaRef(Refs&& data) : m_data(data) {}
 
         FORCE_INLINE auto& data() { return m_data; }
         FORCE_INLINE const auto& data() const { return m_data; }
@@ -318,7 +320,7 @@ class SoaRef : public Inherited<access_t<Types, typename StorageType<Types, 0, E
 };
 
 template<typename Types, size_t N>
-class SoaRefN : public Inherited<access_t<Types,  typename StorageType<Types, N, ElemRefN>::type>> {
+class SoaRefN : public Inherited<access_t<Types, SoaRefN<Types, N>>> {
     public:
         using Data = typename StorageType<Types, N, ElemRefN>::type;
         using Self = SoaRefN<Types, N>;
@@ -326,7 +328,7 @@ class SoaRefN : public Inherited<access_t<Types,  typename StorageType<Types, N,
         static constexpr size_t size() { return N; }
 
         template<typename Refs>
-        FORCE_INLINE SoaRefN(Refs&& data) : m_data(data), Inherited<access_t<Types, Data>>(m_data) {}
+        FORCE_INLINE SoaRefN(Refs&& data) : m_data(data) {}
 
         FORCE_INLINE auto& data() { return m_data; }
         FORCE_INLINE const auto& data() const { return m_data; }
