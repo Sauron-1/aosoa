@@ -9,7 +9,8 @@ using namespace std;
 SOA_DEFINE_ELEM(pos);
 SOA_DEFINE_ELEM(vel);
 
-using particle_arr = aosoa::Aosoa<
+//using particle_arr = aosoa::AosoaList<
+using particle_arr = aosoa::AosoaVector<
                         std::tuple<
                             pos<double, 0>,
                             vel<double, 3>>,
@@ -75,9 +76,10 @@ bool test() {
 
 int main() {
     //cerr << test_pa(35, 5, 29, 8) << endl;
+    const size_t test_num = 20000;
     cerr << test_pa(21, 16, 20, 19) << endl;
     bool ok = true;
-    for (auto i = 0; i < 20000; ++i) {
+    for (auto i = 0; i < test_num; ++i) {
         if (!test()) {
             cerr << "ERROR" << endl;
             ok = false;
@@ -87,7 +89,7 @@ int main() {
             cerr << "OK" << endl;
         }
     }
-    if (ok) cerr << "All OK" << endl;
+    if (ok) cerr << "Tested " << test_num << ". All OK" << endl;
     /*
     particle_arr pa;
     pa.resize(25);

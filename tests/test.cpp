@@ -1,11 +1,11 @@
-#include "../aosoa/soa.hpp"
+#include "../aosoa/aosoa.hpp"
 #include <iostream>
 using namespace std;
 
 SOA_DEFINE_ELEM(pos);
 SOA_DEFINE_ELEM(vel);
 
-using particle_arr = soa::SoaArray<
+using particle_arr = aosoa::SoaArray<
                         std::tuple< vel<double, 3>,
                                     pos<double, 0>>, 10>;
 
