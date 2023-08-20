@@ -5,11 +5,11 @@
 
 namespace aosoa {
 
-template<typename Types, size_t N>
-class SoaArray : public soa::Inherited<soa::access_t<Types, SoaArray<Types, N>>>, public Container<SoaArray<Types, N>> {
+template<typename Types, size_t N, size_t align>
+class alignas(align) SoaArray : public soa::Inherited<soa::access_t<Types, SoaArray<Types, N, align>>>, public Container<SoaArray<Types, N, align>> {
     public:
         using Data = typename soa::StorageType<Types, N, std::array>::type;
-        using Self = SoaArray<Types, N>;
+        using Self = SoaArray<Types, N, align>;
 
         static constexpr size_t size() { return N; }
 
@@ -77,7 +77,7 @@ class SoaArray : public soa::Inherited<soa::access_t<Types, SoaArray<Types, N>>>
              });
         }
 
-        void merge(size_t start, size_t other_start, size_t count, const SoaArray<Types, N>& other) {
+        void merge(size_t start, size_t other_start, size_t count, const SoaArray<Types, N, align>& other) {
             tpa::constexpr_for<0, std::tuple_size_v<Data>, 1>([&,  this](auto I) {
                  constexpr size_t i = decltype(I)::value;
                  using elem_t = typename std::tuple_element_t<i, Data>::value_type;

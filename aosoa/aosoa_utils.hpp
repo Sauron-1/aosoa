@@ -6,7 +6,7 @@
 namespace aosoa {
 namespace internal {
 
-template<typename Types, size_t N>
+template<typename Types, size_t N, size_t align>
 class AosoaBuffer {
 
     public:
@@ -14,7 +14,7 @@ class AosoaBuffer {
 
         size_t left() const { return m_num - m_idx; }
 
-        size_t fill(SoaArray<Types, N>& arr, size_t start) {
+        size_t fill(SoaArray<Types, N, align>& arr, size_t start) {
             size_t cap = N - start, l = left();
             if (l == 0) return start;
             if (cap > l) {

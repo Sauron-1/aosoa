@@ -142,6 +142,8 @@ struct StorageType<std::tuple<Ts...>, N, Frame> {
         std::tuple<typename ElemStorageType<Ts, N, Frame>::type ...> >::type;
 };
 
+template<typename Types, size_t N> struct MinAlign : std::alignment_of<typename StorageType<Types, N, std::array>::type> {};
+
 
 template<typename Types> struct const_types {};
 template<typename...Ts, size_t...Ns, template<typename, size_t> typename...Tps>

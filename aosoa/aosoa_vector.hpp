@@ -9,11 +9,11 @@
 
 namespace aosoa {
 
-template<typename Types, size_t N>
-class AosoaVector : public AosoaContainer<AosoaVector<Types, N>> {
+template<typename Types, size_t N, size_t align>
+class AosoaVector : public AosoaContainer<AosoaVector<Types, N, align>> {
     public:
-        using Frame = SoaArray<Types, N>;
-        using Base = AosoaContainer<AosoaVector<Types, N>>;
+        using Frame = SoaArray<Types, N, align>;
+        using Base = AosoaContainer<AosoaVector<Types, N, align>>;
         using Base::frame_size,
               Base::elem_size;
 
@@ -128,7 +128,7 @@ class AosoaVector : public AosoaContainer<AosoaVector<Types, N>> {
                 resize(num + start);
                 size_t start_frame = start / frame_size,
                        start_index = start % frame_size;
-                internal::AosoaBuffer<Types, N> abuf(buf, num);
+                internal::AosoaBuffer<Types, N, align> abuf(buf, num);
                 // First, try fill first frame
                 auto n = abuf.fill(frame(start_frame), start_index);
                 // If there's element(s) left, fill them to the next frame.
@@ -147,7 +147,7 @@ class AosoaVector : public AosoaContainer<AosoaVector<Types, N>> {
                 void *mid_start = (char*)buf + num_head * elem_size;
                 void *tail_start = (char*)mid_start + num_frame_full * frame_size * elem_size;
 
-                internal::AosoaBuffer<Types, N> buf_head(buf, num_head),
+                internal::AosoaBuffer<Types, N, align> buf_head(buf, num_head),
                                       buf_tail(tail_start, num_tail);
 
                 start_index = buf_head.fill(frame(start_frame), start_index);

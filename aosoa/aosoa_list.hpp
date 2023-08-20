@@ -9,12 +9,12 @@
 namespace aosoa {
 
 
-template<typename Types, size_t N>
-class AosoaList : public AosoaContainer<AosoaList<Types, N>> {
+template<typename Types, size_t N, size_t align>
+class AosoaList : public AosoaContainer<AosoaList<Types, N, align>> {
     public:
-        using Frame = SoaArray<Types, N>;
+        using Frame = SoaArray<Types, N, align>;
         using Frame_ptr = std::unique_ptr<Frame>;
-        using Base = AosoaContainer<AosoaList<Types, N>>;
+        using Base = AosoaContainer<AosoaList<Types, N, align>>;
         using Base::frame_size,
               Base::elem_size;
 
@@ -35,7 +35,7 @@ class AosoaList : public AosoaContainer<AosoaList<Types, N>> {
             m_last_frame_num = new_size % frame_size;
             m_used_frames = (new_size + frame_size - 1) / frame_size;
             while (m_data.size() < m_used_frames)
-                m_data.emplace_back(std::make_unique<SoaArray<Types, N>>());
+                m_data.emplace_back(std::make_unique<SoaArray<Types, N, align>>());
         }
         FORCE_INLINE void clear() { m_used_frames = 0; m_last_frame_num = 0; }
 
@@ -128,7 +128,7 @@ class AosoaList : public AosoaContainer<AosoaList<Types, N>> {
                 resize(num + start);
                 size_t start_frame = start / frame_size,
                        start_index = start % frame_size;
-                internal::AosoaBuffer<Types, N> abuf(buf, num);
+                internal::AosoaBuffer<Types, N, align> abuf(buf, num);
                 // First, try fill first frame
                 auto n = abuf.fill(*m_data[start_frame], start_index);
                 // If there's element(s) left, fill them to the next frame.
@@ -147,7 +147,7 @@ class AosoaList : public AosoaContainer<AosoaList<Types, N>> {
                 void *mid_start = (char*)buf + num_head * elem_size;
                 void *tail_start = (char*)mid_start + num_frame_full * frame_size * elem_size;
 
-                internal::AosoaBuffer<Types, N> buf_head(buf, num_head),
+                internal::AosoaBuffer<Types, N, align> buf_head(buf, num_head),
                                       buf_tail(tail_start, num_tail);
 
                 start_index = buf_head.fill(*m_data[start_frame], start_index);
@@ -200,7 +200,7 @@ class AosoaList : public AosoaContainer<AosoaList<Types, N>> {
             }
         }
 
-        void move_merge(size_t start, size_t other_start, AosoaList<Types, N>& other) {
+        void move_merge(size_t start, size_t other_start, AosoaList<Types, N, align>& other) {
             size_t other_end = other.size();
             bool one_framed = other_start / frame_size == other_end / frame_size;
             if (one_framed) {
@@ -220,14 +220,14 @@ class AosoaList : public AosoaContainer<AosoaList<Types, N>> {
                             m_data[start/frame_size]->merge(start%frame_size, other_start%frame_size, cap, *(other.data()[other_start/frame_size]));
                             if (m_data.size() <= start/frame_size + 1) {
                                 m_used_frames += 1;
-                                m_data.emplace_back(std::make_unique<SoaArray<Types, N>>());
+                                m_data.emplace_back(std::make_unique<SoaArray<Types, N, align>>());
                             }
                             m_data[start/frame_size+1]->merge(0, (other_start+cap)%frame_size, num-cap, *(other.data()[other_start/frame_size]));
                         }
                         else {
                             if (m_data.size() <= start/frame_size) {
                                 m_used_frames += 1;
-                                m_data.emplace_back(std::make_unique<SoaArray<Types, N>>());
+                                m_data.emplace_back(std::make_unique<SoaArray<Types, N, align>>());
                             }
                             m_data[start/frame_size]->merge(0, other_start%frame_size, num, *(other.data()[other_start/frame_size]));
                         }
@@ -307,7 +307,7 @@ class AosoaList : public AosoaContainer<AosoaList<Types, N>> {
                     if (num_head > 0) {
                         // we may need to allocate a new frame
                         if (m_data.size() <= start_frame)
-                            m_data.emplace_back(std::make_unique<SoaArray<Types, N>>());
+                            m_data.emplace_back(std::make_unique<SoaArray<Types, N, align>>());
                         m_data[start_frame]->merge(0, frame_size-num_head, num_head, *(other.data()[other_start/frame_size]));
                     }
                     if (full_end > full_start)

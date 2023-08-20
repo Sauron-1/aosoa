@@ -25,24 +25,24 @@ class Container {
         FORCE_INLINE auto operator[](size_t i) { return derived()[i]; }
         FORCE_INLINE auto operator[](size_t i) const { return derived()[i]; }
 
-        template<size_t S>
+        template<size_t S> requires( S <= frame_size )
         FORCE_INLINE auto get(size_t i) { return derived().get<S>(i%frame_size); }
-        template<size_t S>
+        template<size_t S> requires( S <= frame_size )
         FORCE_INLINE auto get(size_t i) const { return derived().get<S>(i%frame_size); }
 
-        template<size_t S = 0>
+        template<size_t S = 0> requires( S <= frame_size )
         auto begin() { return SoaIter<Derived, S, false>(derived_ptr(), 0); }
-        template<size_t S = 0>
+        template<size_t S = 0> requires( S <= frame_size )
         auto begin() const { return SoaIter<Derived, S, true>(derived_ptr(), 0); }
 
-        template<size_t S = 0>
+        template<size_t S = 0> requires( S <= frame_size )
         auto end() {
             auto _size = size();
             if constexpr (S > 0)
                 _size = size() / S * S;
             return SoaIter<Derived, S, false>(derived_ptr(), _size);
         }
-        template<size_t S = 0>
+        template<size_t S = 0> requires( S <= frame_size )
         auto end() const {
             auto _size = size();
             if constexpr (S > 0)
@@ -50,37 +50,37 @@ class Container {
             return SoaIter<Derived, S, true>(derived_ptr(), _size);
         }
 
-        template<size_t S = 0> auto ubegin() {
+        template<size_t S = 0> requires( S <= frame_size ) auto ubegin() {
             auto _size = size();
             if constexpr (S > 0)
                 _size = size() / S * S;
             return SoaIter<Derived, 1, false>(derived_ptr(), _size);
         }
-        template<size_t S = 0> auto ubegin() const {
+        template<size_t S = 0> requires( S <= frame_size ) auto ubegin() const {
             auto _size = size();
             if constexpr (S > 0)
                 _size = size() / S * S;
             return SoaIter<Derived, 1, true>(derived_ptr(), _size);
         }
 
-        template<size_t S = 0> auto uend() {
+        template<size_t S = 0> requires( S <= frame_size ) auto uend() {
             return SoaIter<Derived, 1, false>(derived_ptr(), size());
         }
-        template<size_t S = 0> auto uend() const {
+        template<size_t S = 0> requires( S <= frame_size ) auto uend() const {
             return SoaIter<Derived, 1, true>(derived_ptr(), size());
         }
 
-        template<size_t S = 0> auto range() {
+        template<size_t S = 0> requires( S <= frame_size ) auto range() {
             return SoaRangeProxy<Derived, S, false, false>(derived_ptr());
         }
-        template<size_t S = 0> auto range() const {
+        template<size_t S = 0> requires( S <= frame_size ) auto range() const {
             return SoaRangeProxy<Derived, S, true, false>(derived_ptr());
         }
 
-        template<size_t S = 0> auto urange() {
+        template<size_t S = 0> requires( S <= frame_size ) auto urange() {
             return SoaRangeProxy<Derived, S, false, true>(derived_ptr());
         }
-        template<size_t S = 0> auto urange() const {
+        template<size_t S = 0> requires( S <= frame_size ) auto urange() const {
             return SoaRangeProxy<Derived, S, true, true>(derived_ptr());
         }
 };
@@ -108,9 +108,9 @@ class AosoaContainer : public Container<Derived> {
         FORCE_INLINE auto operator[](size_t i) { return frame(i/frame_size)[i%frame_size]; }
         FORCE_INLINE auto operator[](size_t i) const { return frame(i/frame_size)[i%frame_size]; }
 
-        template<size_t S>
+        template<size_t S> requires( S <= frame_size )
         FORCE_INLINE auto get(size_t i) { return frame(i/frame_size).template get<S>(i%frame_size); }
-        template<size_t S>
+        template<size_t S> requires( S <= frame_size )
         FORCE_INLINE auto get(size_t i) const { return frame(i/frame_size).template get<S>(i%frame_size); }
 };
 
