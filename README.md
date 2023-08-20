@@ -2,6 +2,11 @@
 
 Header-only library providing structure-of-arrays (`soa::SoaArray<Types, N>`) and array-of-structures-of-arrays (`aosoa::Aosoa<Types, N>`) data structure, targeting particle simulation usage. Both implements C++20 range API.
 
+Provided containers:
+- `SoaArray`: elements arranged as 'a a a ... a b b b ... b', fix-sized.
+- `AosoaVector`: vector of `SoaArray`s.
+- `AosoaList`: vector of `unique_ptr<SoaArray>`s.
+
 Using the library requires C++20.
 
 # Example
@@ -16,7 +21,7 @@ SOA_DEFINE_ELEM(pos);
 SOA_DEFINE_ELEM(vel);
 SOA_DEFINE_ELEM(weight);
 
-using particle_arr = aosoa::Aosoa<
+using particle_arr = aosoa::AosoaVector<
     std::tuple<
         pos<double, 1>,  // pos is a 1-tuple
         vel<double, 3>,

@@ -8,7 +8,7 @@ SOA_DEFINE_ELEM(pos);
 SOA_DEFINE_ELEM(vel);
 SOA_DEFINE_ELEM(weight);
 
-using particle_arr = aosoa::Aosoa<
+using particle_arr = aosoa::AosoaVector<
     std::tuple<
         pos<double, 1>,  // pos is a 1-tuple
         vel<double, 3>,
