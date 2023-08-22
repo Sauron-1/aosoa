@@ -26,9 +26,9 @@ class Container {
         FORCE_INLINE auto operator[](size_t i) const { return derived()[i]; }
 
         template<size_t S> requires( S <= frame_size )
-        FORCE_INLINE auto get(size_t i) { return derived().get<S>(i%frame_size); }
+        FORCE_INLINE auto get(size_t i) { return derived().get<S>(i); }
         template<size_t S> requires( S <= frame_size )
-        FORCE_INLINE auto get(size_t i) const { return derived().get<S>(i%frame_size); }
+        FORCE_INLINE auto get(size_t i) const { return derived().get<S>(i); }
 
         template<size_t S = 0> requires( S <= frame_size )
         auto begin() { return SoaIter<Derived, S, false>(derived_ptr(), 0); }

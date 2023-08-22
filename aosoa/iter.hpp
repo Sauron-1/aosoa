@@ -48,15 +48,15 @@ class SoaIter {
 
         FORCE_INLINE auto operator-(const Self& other) const { return (difference_type(m_index) - difference_type(other.index())) / step_size; }
 
-        FORCE_INLINE bool operator==(const Self& other) const { return m_index == other.m_index; }
-        FORCE_INLINE bool operator>=(const Self& other) const { return m_index >= other.m_index; }
-        FORCE_INLINE bool operator<=(const Self& other) const { return m_index <= other.m_index; }
-        FORCE_INLINE bool operator<(const Self& other) const { return m_index < other.m_index; }
-        FORCE_INLINE bool operator>(const Self& other) const { return m_index > other.m_index; }
+        FORCE_INLINE bool operator==(const Self& other) const { return m_index == other.index(); }
+        FORCE_INLINE bool operator>=(const Self& other) const { return m_index >= other.index(); }
+        FORCE_INLINE bool operator<=(const Self& other) const { return m_index <= other.index(); }
+        FORCE_INLINE bool operator<(const Self& other) const { return m_index < other.index(); }
+        FORCE_INLINE bool operator>(const Self& other) const { return m_index > other.index(); }
 
         FORCE_INLINE auto& operator=(const Self& other) {
             m_data = other.data();
-            m_index = other.m_index;
+            m_index = other.index();
             return *this;
         }
 

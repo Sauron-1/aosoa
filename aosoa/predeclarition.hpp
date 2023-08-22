@@ -1,5 +1,6 @@
 #include "soa.hpp"
 #include <type_traits>
+#include <limits>
 
 #pragma once
 
@@ -10,7 +11,7 @@ template<typename Derived> class AosoaContainer;
 
 // Soa types
 template<typename Types, size_t N, size_t align = soa::MinAlign<Types, N>::value> class SoaArray;
-template<typename Types, size_t N, size_t align = soa::MinAlign<Types, N>::value> class SoaVector;
+template<typename Types, size_t N=0, size_t align=0> class SoaVector;  // N and align are not used
 
 // Aosoa types
 template<typename Types, size_t N, size_t align = soa::MinAlign<Types, N>::value> class AosoaList;
@@ -23,11 +24,13 @@ template<typename Types, size_t N, size_t align> struct aosoa_traits<SoaArray<Ty
     using types = Types;
     static constexpr size_t elem_size = soa::elems_size<Types>::value;
     static constexpr size_t align_bytes = align;
+    static constexpr size_t frame_size = N;
 };
 template<typename Types, size_t N, size_t align> struct aosoa_traits<SoaVector<Types, N, align>> {
     using types = Types;
     static constexpr size_t elem_size = soa::elems_size<Types>::value;
     static constexpr size_t align_bytes = align;
+    static constexpr size_t frame_size = std::numeric_limits<size_t>::max();
 };
 
 template<typename Types, size_t N, size_t align> struct aosoa_traits<AosoaList<Types, N, align>> {

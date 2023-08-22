@@ -162,6 +162,7 @@ struct elems_size<std::tuple<Tp1<T1, N1>, Tps<Ts, Ns>...>> :
 template<typename T, size_t> using ElemRef = T&;
 template<typename T, size_t N> using ElemRefN = std::array<T, N>&;
 template<typename T, size_t> using ElemElem = T;
+template<typename T, size_t> using ElemVec = std::vector<T>;
 
 
 // Container type and reference type
