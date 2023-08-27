@@ -48,8 +48,7 @@ struct ElementBase {
 template<typename T, size_t D=0> \
 struct NAME { \
     using Scalar = T; \
-    static constexpr size_t _dim = D; \
-    static constexpr size_t dim = D == 0 ? 1 : D; \
+    static constexpr size_t dim = (D == 0) ? 1 : D; \
     template<typename C, size_t Idx> \
     struct Access : private soa::ElementBase<D, Idx> { \
         decltype(auto) NAME() { \
@@ -74,7 +73,7 @@ namespace detail {  // To inform the element accessor its index
 
     template<typename T1, typename...Ts, typename C, size_t acc, typename...Unpacked>
     struct AccessTypesImpl<std::tuple<T1, Ts...>, C, acc, Unpacked...> {
-        using type = typename AccessTypesImpl<std::tuple<Ts...>, C, acc+T1::dim, Unpacked..., typename T1::template Access<C, acc>>::type;
+        using type = typename AccessTypesImpl<std::tuple<Ts...>, C, acc+T1::dim, typename T1::template Access<C, acc>, Unpacked...>::type;
     };
 }
 template<typename Types, typename C> struct AccessTypes {};
@@ -119,6 +118,7 @@ namespace detail {
     struct pack_elem_storage_type<std::tuple<>, T...> {
         using type = std::tuple<T...>;
     };
+    /*
     // The first elem is fully unpacked. Proceed. TODO: unused?
     template<typename...Et, typename...T>
     struct pack_elem_storage_type<std::tuple<std::tuple<>, Et...>, T...> {
@@ -129,10 +129,11 @@ namespace detail {
     struct pack_elem_storage_type<std::tuple<Frame<Et1, N>, Et...>, T...> {
         using type = typename pack_elem_storage_type<std::tuple<std::tuple<Frame<Et1, N>>, Et...>, T...>::type;
     };
+    */
     // Unpack the first element.
     template<typename...Et1, typename...Et, typename...T>
     struct pack_elem_storage_type<std::tuple<std::tuple<Et1...>, Et...>, T...> {
-        using type = typename pack_elem_storage_type<std::tuple<Et...>, Et1..., T...>::type;
+        using type = typename pack_elem_storage_type<std::tuple<Et...>, T..., Et1...>::type;
     };
 }
 template<typename Types, size_t N, template<typename, size_t> typename Frame> struct StorageType {};
