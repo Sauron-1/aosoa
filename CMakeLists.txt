@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_library(aosoa INTERFACE)
 target_include_directories(
     aosoa INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/aosoa>
     $<INSTALL_INTERFACE:include/aosoa>
 )
 
