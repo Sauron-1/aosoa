@@ -2,6 +2,7 @@
 #include "soa.hpp"
 #include <tuple_arithmetic/tpa_basic/binary_op.hpp>
 #include <vector>
+#include "aligned_alloc.hpp"
 
 #pragma once
 
@@ -11,7 +12,9 @@ template<typename Types, size_t N, size_t align>
 class SoaVector : public soa::Inherited<soa::access_t<Types, SoaVector<Types, N, align>>>, public Container<SoaVector<Types, N, align>> {
     
     public:
-        using Data = typename soa::StorageType<Types, N, soa::ElemVec>::type;
+        template<typename T, size_t>
+        using stor_vec = std::vector<T, AlignedAllocator<T, align>>;
+        using Data = typename soa::StorageType<Types, N, stor_vec >::type;
         using Self = SoaVector<Types, N, align>;
 
         FORCE_INLINE auto& data() { return m_data; }
