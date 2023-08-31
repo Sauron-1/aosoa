@@ -47,7 +47,7 @@ int main() {
         cout << get<0>(p.pos()) << " ";
     cout << endl;
     // For avx512, print:
-    // 1 1 1 1 1 1 1 1 8 8 8 8 8 8 8 8 0 0 0
+    // 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 0 0 0
     // For avx2, print:
     // 1 1 1 1 2 2 2 2 3 3 3 3 4 4 4 4 0 0 0
     // For SSE2, print:
