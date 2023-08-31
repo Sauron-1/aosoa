@@ -1,5 +1,6 @@
 #include "../aosoa/aosoa.hpp"
 #include <algorithm>
+#include <iostream>
 
 using namespace std;
 
@@ -8,7 +9,7 @@ SOA_DEFINE_ELEM(pos);
 SOA_DEFINE_ELEM(vel);
 }
 
-using particle_arr = aosoa::Aosoa<
+using particle_arr = aosoa::SoaVector<
                         std::tuple< particle_field::vel<double, 3>,
                                     particle_field::pos<double, 1>>, 8>;
 

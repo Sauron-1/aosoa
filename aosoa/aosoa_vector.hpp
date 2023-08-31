@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <cstdint>
+#include <xsimd/xsimd.hpp>
 
 #pragma once
 
@@ -197,7 +198,7 @@ class AosoaVector : public AosoaContainer<AosoaVector<Types, N, align>> {
         }
 
     private:
-        std::vector<Frame> m_data;
+        std::vector<Frame, xsimd::aligned_allocator<Frame, align>> m_data;
         size_t m_used_frames;
         size_t m_last_frame_num;
 };

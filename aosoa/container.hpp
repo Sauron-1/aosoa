@@ -1,5 +1,6 @@
 #include "predeclarition.hpp"
 #include "iter.hpp"
+#include <xsimd/xsimd.hpp>
 
 #pragma once
 

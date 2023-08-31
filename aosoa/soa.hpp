@@ -4,7 +4,7 @@
 #include <tuple>
 #include <cstring>
 
-#include <tuple_arithmetic/tuple_arithmetic.hpp>
+#include <tuple_arithmetic.hpp>
 
 #pragma once
 
@@ -73,7 +73,7 @@ namespace detail {  // To inform the element accessor its index
 
     template<typename T1, typename...Ts, typename C, size_t acc, typename...Unpacked>
     struct AccessTypesImpl<std::tuple<T1, Ts...>, C, acc, Unpacked...> {
-        using type = typename AccessTypesImpl<std::tuple<Ts...>, C, acc+T1::dim, typename T1::template Access<C, acc>, Unpacked...>::type;
+        using type = typename AccessTypesImpl<std::tuple<Ts...>, C, acc+T1::dim, Unpacked..., typename T1::template Access<C, acc>>::type;
     };
 }
 template<typename Types, typename C> struct AccessTypes {};
@@ -92,7 +92,7 @@ template<typename T1, typename...Ts>
 struct Inherited<std::tuple<T1, Ts...>> :
 public T1, public Inherited<std::tuple<Ts...>> {
     template<typename...Args>
-    Inherited(Args&&...args) : T1(args...), Inherited<std::tuple<Ts...>>(args...) {}
+    Inherited(Args&&...args) : Inherited<std::tuple<Ts...>>(args...), T1(args...) {}
 };
 
 
@@ -118,18 +118,6 @@ namespace detail {
     struct pack_elem_storage_type<std::tuple<>, T...> {
         using type = std::tuple<T...>;
     };
-    /*
-    // The first elem is fully unpacked. Proceed. TODO: unused?
-    template<typename...Et, typename...T>
-    struct pack_elem_storage_type<std::tuple<std::tuple<>, Et...>, T...> {
-        using type = typename pack_elem_storage_type<std::tuple<Et...>, T...>::type;
-    };
-    // The first elem is not a tuple. Convert it into a 1-elem tuple.
-    template<typename Et1, template<typename, size_t> typename Frame, size_t N, typename...Et, typename...T>
-    struct pack_elem_storage_type<std::tuple<Frame<Et1, N>, Et...>, T...> {
-        using type = typename pack_elem_storage_type<std::tuple<std::tuple<Frame<Et1, N>>, Et...>, T...>::type;
-    };
-    */
     // Unpack the first element.
     template<typename...Et1, typename...Et, typename...T>
     struct pack_elem_storage_type<std::tuple<std::tuple<Et1...>, Et...>, T...> {
@@ -144,6 +132,27 @@ struct StorageType<std::tuple<Ts...>, N, Frame> {
 };
 
 template<typename Types, size_t N> struct MinAlign : std::alignment_of<typename StorageType<Types, N, std::array>::type> {};
+
+namespace detail{
+    template<size_t align, typename ST>
+    constexpr auto storage_offset_impl() {
+        size_t acc = 0;
+        constexpr size_t num = std::tuple_size_v<ST>;
+        std::array<size_t, num> result;
+        tpa::constexpr_for<0, num, 1>([&acc, &result](auto I) {
+            constexpr size_t i = decltype(I)::value;
+            size_t offset = (acc + sizeof(std::tuple_element_t<I, ST>)) % align;
+            acc = offset;
+            result[i] = offset;
+        });
+        return result;
+    };
+
+    template<size_t align, typename ST>
+    inline static constexpr auto storage_offset = storage_offset_impl<align, ST>();
+}
+template<typename Types, size_t N, size_t align>
+static constexpr auto storage_offset = detail::storage_offset<align, typename StorageType<Types, N, std::array>::type>;
 
 
 template<typename Types> struct const_types {};
@@ -167,8 +176,7 @@ template<typename T, size_t> using ElemVec = std::vector<T>;
 
 
 // Container type and reference type
-//template<typename Types, size_t N> class SoaArray;
-//template<typename Types> class SoaVector; // TODO
+template<typename Types, tpa::tuple_like Data> class SoaRefNAny;
 template<typename Types, size_t N> class SoaRefN;
 template<typename Types> class SoaRef;
 
@@ -231,6 +239,43 @@ class SoaRefN : public Inherited<access_t<Types, SoaRefN<Types, N>>> {
     private:
         Data m_data;
 };
+
+template<typename Types, tpa::tuple_like Data>
+class SoaRefNAny : public Inherited<access_t<Types, SoaRefNAny<Types, Data>>> {
+    public:
+        static constexpr size_t size() { return 0; }
+
+        template<typename Refs>
+        FORCE_INLINE SoaRefNAny(Refs&& data) : m_data(data) {}
+
+        FORCE_INLINE auto& data() { return m_data; }
+        FORCE_INLINE const auto& data() const { return m_data; }
+
+        template<typename OtherRef>
+        FORCE_INLINE auto operator=(OtherRef&& other) {
+            tpa::assign(m_data, other.data());
+        }
+
+    private:
+        Data m_data;
+};
+
+namespace detail {
+    template<typename T>
+    concept all_tuple_like = tpa::tuple_like<T> &&
+        []<std::size_t...I>(std::index_sequence<I...>) {
+            return (... && tpa::tuple_like<std::tuple_element_t<I, T>>);
+        }(std::make_index_sequence<std::tuple_size_v<T>>{});
+}
+template<typename Types, size_t N, tpa::tuple_like T>
+auto make_soa_refn(T&& data) {
+    if constexpr (detail::all_tuple_like<std::remove_cvref_t<T>>) {
+        return SoaRefN<Types, N>(std::forward<T>(data));
+    }
+    else {
+        return SoaRefNAny<Types, std::remove_cvref_t<T>>(std::forward<T>(data));
+    }
+}
 
 } // namespace soa
 
