@@ -37,7 +37,7 @@ if(NOT xsimd_FOUND)
     )
     FetchContent_MakeAvailable(xsimd)
 endif()
-target_link_libraries(xsimd INTERFACE xsimd)
+#target_link_libraries(aosoa PRIVATE xsimd)
 
 target_compile_features(aosoa INTERFACE cxx_std_20)
 

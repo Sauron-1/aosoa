@@ -176,7 +176,7 @@ template<typename T, size_t> using ElemVec = std::vector<T>;
 
 
 // Container type and reference type
-template<typename Types, tpa::tuple_like Data> class SoaRefNAny;
+template<typename Types, tpa::tuple_like Data, size_t N> class SoaRefNAny;
 template<typename Types, size_t N> class SoaRefN;
 template<typename Types> class SoaRef;
 
@@ -240,10 +240,10 @@ class SoaRefN : public Inherited<access_t<Types, SoaRefN<Types, N>>> {
         Data m_data;
 };
 
-template<typename Types, tpa::tuple_like Data>
-class SoaRefNAny : public Inherited<access_t<Types, SoaRefNAny<Types, Data>>> {
+template<typename Types, tpa::tuple_like Data, size_t N>
+class SoaRefNAny : public Inherited<access_t<Types, SoaRefNAny<Types, Data, N>>> {
     public:
-        static constexpr size_t size() { return 0; }
+        static constexpr size_t size() { return N; }
 
         template<typename Refs>
         FORCE_INLINE SoaRefNAny(Refs&& data) : m_data(data) {}
@@ -273,7 +273,7 @@ auto make_soa_refn(T&& data) {
         return SoaRefN<Types, N>(std::forward<T>(data));
     }
     else {
-        return SoaRefNAny<Types, std::remove_cvref_t<T>>(std::forward<T>(data));
+        return SoaRefNAny<Types, std::remove_cvref_t<T>, N>(std::forward<T>(data));
     }
 }
 

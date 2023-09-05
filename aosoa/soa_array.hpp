@@ -131,7 +131,7 @@ class alignas(align) SoaArray : public soa::Inherited<soa::access_t<Types, SoaAr
         }
 
     private:
-        Data m_data;  // an std::tuple
+        alignas(align) Data m_data;  // an std::tuple
 };
 
 }  // namespace aosoa

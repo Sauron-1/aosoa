@@ -20,12 +20,13 @@ using Types = std::tuple<
       particle_field::vel<double, 3>,
       particle_field::id<int32_t, 0>>;
 //using particle_arr = aosoa::SoaVector<Types, 64>;
-using particle_arr = aosoa::AosoaList<Types, 8>;
+//using particle_arr = aosoa::AosoaList<Types, 8>;
+using particle_arr = aosoa::SoaArray<Types, 32>;
 
 int main() {
     constexpr size_t num_dbl = aosoa::simd_width / sizeof(double);
     particle_arr pa;
-    pa.resize(19);
+    //pa.resize(19);
     int i = 0;
     auto p = pa.uend() - 1;
     tpa::assign((*p).pos(), 0);
