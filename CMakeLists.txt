@@ -25,22 +25,6 @@ if(NOT tuple_arithmetic_FOUND)
 endif()
 target_link_libraries(aosoa INTERFACE tuple_arithmetic)
 
-# Find xsimd or download from GitHub
-find_package(xsimd QUIET)
-if(NOT xsimd_FOUND)
-    message(STATUS "xsimd not found. Downloading from github...")
-    include(FetchContent)
-    FetchContent_Declare(
-        xsimd
-        GIT_REPOSITORY https://github.com/xtensor-stack/xsimd.git
-        GIT_TAG        v11.1.0
-    )
-    FetchContent_MakeAvailable(xsimd)
-endif()
-#target_link_libraries(aosoa PRIVATE xsimd)
-
-target_compile_features(aosoa INTERFACE cxx_std_20)
-
 install(TARGETS aosoa EXPORT aosoaConfig)
 install(EXPORT aosoaConfig DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/aosoa)
 install(DIRECTORY aosoa DESTINATION include)
