@@ -16,11 +16,13 @@ using particle_arr = aosoa::SoaVector<
 int main() {
     particle_arr pa;
     pa.resize(19);
+
     int i = 0;
-    for (auto p : pa.range<4>())
+    for (auto p : pa.range<4>(1, 17))
         tpa::assign(p.pos(), ++i);
-    for (auto p : pa.urange<4>())
-        tpa::assign(p.pos(), 0);
+    ++i;
+    for (auto p : pa.urange<4>(1, 17))
+        tpa::assign(p.pos(), i);
 
     for (auto p : pa)
         cout << get<0>(p.pos()) << " ";

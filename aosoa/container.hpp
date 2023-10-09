@@ -84,6 +84,20 @@ class Container {
         template<size_t S = 0> requires( S <= frame_size ) auto urange() const {
             return SoaRangeProxy<Derived, S, true, true>(derived_ptr());
         }
+
+        template<size_t S = 0> requires( S <= frame_size ) auto range(size_t start, size_t end) {
+            return RangedSoaRangeProxy<Derived, S, false, false>(derived_ptr(), start, end);
+        }
+        template<size_t S = 0> requires( S <= frame_size ) auto range(size_t start, size_t end) const {
+            return RangedSoaRangeProxy<Derived, S, true, false>(derived_ptr(), start, end);
+        }
+
+        template<size_t S = 0> requires( S <= frame_size ) auto urange(size_t start, size_t end) {
+            return RangedSoaRangeProxy<Derived, S, false, true>(derived_ptr(), start, end);
+        }
+        template<size_t S = 0> requires( S <= frame_size ) auto urange(size_t start, size_t end) const {
+            return RangedSoaRangeProxy<Derived, S, true, true>(derived_ptr(), start, end);
+        }
 };
 
 template<typename Derived>
