@@ -14,7 +14,9 @@ class SoaIter {
         using base_types = typename aosoa_traits<std::remove_cvref_t<Base>>::types;
         using self_types = std::conditional_t<const_iter, typename soa::const_types<base_types>::type, base_types>;
         using difference_type = std::ptrdiff_t;
-        using value_type = std::conditional_t<S==0, soa::SoaRef<self_types>, soa::SoaRefN<self_types, S>>;
+        // S != 0 should not be used in std algorithms
+        using value_type = std::conditional_t<S==0, soa::SoaElem<self_types>, void>;
+        using reference = std::conditional_t<S==0, soa::SoaRef<self_types>, soa::SoaRefN<self_types, S>>;
         using iterator_category = std::random_access_iterator_tag;
         using Self = SoaIter<B, S, const_iter>;
         static constexpr std::ptrdiff_t step_size = S == 0 ? 1 : S;
@@ -43,7 +45,7 @@ class SoaIter {
         FORCE_INLINE auto& operator-=(std::ptrdiff_t offset) { m_index -= offset * step_size; return *this; }
 
         FORCE_INLINE auto operator+(std::ptrdiff_t offset) const { return Self(m_data, m_index + offset * step_size); }
-        FORCE_INLINE auto operator-(std::ptrdiff_t offset) const { return Self(m_data, m_index + offset * step_size); }
+        FORCE_INLINE auto operator-(std::ptrdiff_t offset) const { return Self(m_data, m_index - offset * step_size); }
 
         FORCE_INLINE auto operator[](std::ptrdiff_t offset) const { return *Self(m_data, m_index + offset * step_size); }
 

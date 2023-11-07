@@ -181,13 +181,31 @@ template<typename Types, size_t N> class SoaRefN;
 template<typename Types> class SoaRef;
 
 template<typename Types>
+class SoaElem : public Inherited<access_t<Types, SoaElem<Types>>> {
+    public:
+        using Data = typename StorageType<Types, 0, ElemElem>::type;
+        static constexpr size_t size() { return 0; }
+        
+        template<tpa::tuple_like Refs>
+        FORCE_INLINE SoaElem(Refs&& data) {
+            tpa::assign(m_data, data);
+        }
+
+        FORCE_INLINE auto& data() { return m_data; }
+        FORCE_INLINE const auto& data() const { return m_data; }
+
+    private:
+        Data m_data;
+};
+
+template<typename Types>
 class SoaRef : public Inherited<access_t<Types, SoaRef<Types>>> {
     public:
         using Data = typename StorageType<Types, 0, ElemRef>::type;
 
         static constexpr size_t size() { return 0; }
 
-        template<typename Refs>
+        template<tpa::tuple_like Refs>
         FORCE_INLINE SoaRef(Refs&& data) : m_data(data) {}
 
         FORCE_INLINE auto& data() { return m_data; }
@@ -196,6 +214,10 @@ class SoaRef : public Inherited<access_t<Types, SoaRef<Types>>> {
         template<typename OtherRef>
         FORCE_INLINE auto operator=(OtherRef&& other) {
             tpa::assign(m_data, other.data());
+        }
+
+        FORCE_INLINE operator SoaElem<Types>() const {
+            return SoaElem<Types>(m_data);
         }
 
     private:
@@ -210,7 +232,7 @@ class SoaRefN : public Inherited<access_t<Types, SoaRefN<Types, N>>> {
 
         static constexpr size_t size() { return N; }
 
-        template<typename Refs>
+        template<tpa::tuple_like Refs>
         FORCE_INLINE SoaRefN(Refs&& data) : m_data(data) {}
 
         FORCE_INLINE auto& data() { return m_data; }
@@ -245,7 +267,7 @@ class SoaRefNAny : public Inherited<access_t<Types, SoaRefNAny<Types, Data, N>>>
     public:
         static constexpr size_t size() { return N; }
 
-        template<typename Refs>
+        template<tpa::tuple_like Refs>
         FORCE_INLINE SoaRefNAny(Refs&& data) : m_data(data) {}
 
         FORCE_INLINE auto& data() { return m_data; }
@@ -277,9 +299,6 @@ auto make_soa_refn(T&& data) {
     }
 }
 
-} // namespace soa
-
-namespace std {
 template<typename Types>
 FORCE_INLINE void swap(soa::SoaRef<Types>&& a, soa::SoaRef<Types>&& b) {
     std::swap(a.data(), b.data());
